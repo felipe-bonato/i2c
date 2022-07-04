@@ -14,3 +14,9 @@ entity slave is
 		rst: in std_logic
 	);
 end entity slave;
+
+architecture behaivioral of slave is
+
+begin
+	
+end architecture behaivioral;

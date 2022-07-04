@@ -2,21 +2,23 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity main is
-	port (
+entity i2c is
+	port(
 		send: in std_logic;
 		addr: in std_logic_vector(3 downto 0);
 		data: in std_logic_vector(4 downto 0);
 		rw: in std_logic;
 		rst: in std_logic;
 		seven_seg_master: out std_logic_vector(7 downto 0);
-		seven_seg_slave: out std_logic_vector(7 downto 0);
+		seven_seg_slave: out std_logic_vector(7 downto 0)
 	);
-end entity main;
+end entity i2c;
 
-architecture behaivioral of main is
+architecture behaivioral of i2c is
 	signal sda: std_logic;
 	signal scl: std_logic;
+	signal clk: std_logic;
+	signal scl_pll: std_logic;
 
 	component master is
 		port (
@@ -51,10 +53,21 @@ architecture behaivioral of main is
 		);
 	end component;
 begin
-	u1: master port map (
+	
+	u01: slave
+		port map (
+			seven_seg => seven_seg_slave,
+			sda => sda,
+			scl => scl,
+			clk => clk,
+			rst => rst
+		);
+	
+	u02: master
+		port map (
 			addr => addr,
 			data => data,
-			rw => rw,	
+			rw => rw,
 			send => send,
 			seven_seg => seven_seg_master,
 			sda => sda,
@@ -62,7 +75,6 @@ begin
 			clk => clk,
 			scl_pll => scl_pll,
 			rst => rst
-	);
-	
+		);
 	
 end architecture behaivioral;

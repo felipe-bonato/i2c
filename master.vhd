@@ -21,3 +21,9 @@ entity master is
 		rst: in std_logic
 	);
 end entity master;
+
+architecture behaivioral of master is
+
+begin
+	
+end architecture behaivioral;
