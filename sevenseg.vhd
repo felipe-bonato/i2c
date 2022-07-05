@@ -1,14 +1,14 @@
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.std_logic_arith.ALL;
-use ieee.std_logic_unsigned.ALL;
+use ieee.std_logic_arith.all;
+use ieee.std_logic_unsigned.all;
 use ieee.numeric_std.all;
 
 entity seven_seg is
-	Port ( 
-		num: in std_logic_vector(3 DOWNTO 0);
-		display: out std_logic_vector(6 DOWNTO 0)
-		rst: in std_logic;
+	port ( 
+		num: in std_logic_vector(3 downto 0);
+		display: out std_logic_vector(6 downto 0);
+		rst: in std_logic
 	);
 end seven_seg;
 

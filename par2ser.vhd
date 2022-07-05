@@ -1,20 +1,18 @@
 library ieee;
 use ieee.std_logic_1164.all;
-use ieee.std_logic_arith.ALL;
-use ieee.std_logic_unsigned.ALL;
+use ieee.std_logic_arith.all;
+use ieee.std_logic_unsigned.all;
 use ieee.numeric_std.all;
-
-
 
 entity par2ser is
 	port (
 		load: in std_logic;
 		nd: in std_logic;
 		data: in std_logic_vector(7 downto 0);
-		tx: out std_logic
+		tx: out std_logic;
 
 		rst: in std_logic;
-		clk: in std_logic;
+		clk: in std_logic
 	);
 end par2ser;
 
