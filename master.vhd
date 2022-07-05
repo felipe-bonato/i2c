@@ -16,7 +16,7 @@ entity master is
 		dataOut: out std_logic_vector(3 downto 0);
 		
 		clk: in std_logic;
-		scl_pll: in std_logic;
+		sclIn: in std_logic;
 		rst: in std_logic
 	);
 end entity master;

@@ -7,14 +7,14 @@ use ieee.numeric_std.all;
 entity i2c is
 	port (
 		send: in std_logic;
-		addr: in std_logic_vector(3 downto 0);
-		data: in std_logic_vector(4 downto 0);
+		addr: in std_logic_vector(2 downto 0);
+		data: in std_logic_vector(3 downto 0);
 		rw: in std_logic;
 	
 		seven_seg_master: out std_logic_vector(7 downto 0);
-		seven_seg_slave: out std_logic_vector(7 downto 0)
+		seven_seg_slave: out std_logic_vector(7 downto 0);
 	
-		rst: in std_logic;
+		rst: in std_logic
 	);
 end entity i2c;
 
@@ -22,7 +22,7 @@ architecture behavioral of i2c is
 	signal wSda: std_logic;
 	signal wScl: std_logic;
 	signal wClk: std_logic;
-	signal wScl_pll: std_logic;
+	signal wSclPll: std_logic;
 	signal wDataSlave: std_logic_vector(3 downto 0);
 	signal wDataMaster: std_logic_vector(3 downto 0);
 	signal wSevenSegMaster: std_logic_vector(6 downto 0);
@@ -38,7 +38,7 @@ architecture behavioral of i2c is
 			scl: out std_logic;
 			dataOut: out std_logic_vector(3 downto 0);
 			clk: in std_logic;
-			scl_pll: in std_logic;
+			sclIn: in std_logic;
 			rst: in std_logic
 		);
 	end component;
@@ -81,7 +81,7 @@ begin
 			scl => wScl,
 			dataOut => wDataMaster,
 			clk => wClk,
-			scl_pll => wScl_pll,
+			sclIn => wSclPll,
 			rst => rst
 		);
 
