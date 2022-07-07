@@ -12,7 +12,6 @@ entity seven_seg is
 	);
 end seven_seg;
 
-
 architecture behavioral of seven_seg is
 	signal wOn: std_logic := '0';
 	signal wOff: std_logic := '1';
@@ -22,8 +21,8 @@ begin
 		if rst = '1' then
 			display <= (others => wOff);
 		else
-			case num is 
-				when x"0" => 
+			case num is
+				when x"0" =>
 					display(0) <= wOn;
 					display(1) <= wOn;
 					display(2) <= wOn;

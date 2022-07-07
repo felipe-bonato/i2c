@@ -4,7 +4,7 @@ use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 use ieee.numeric_std.all;
 
-entity sinc_uart is
+entity edge_detect is
 	port (
 		clk_uart: in std_logic;
 
@@ -13,14 +13,14 @@ entity sinc_uart is
 		clk: in std_logic;
 		rst: in std_logic
 	);
-end sinc_uart;
+end edge_detect;
 
-architecture behavioral of sinc_uart is
+architecture behavioral of edge_detect is
 	signal wClkR, wClkS, wClkT: std_logic;
 begin
 	U1: process(clk, rst)
  	begin
-		if rst= '1' then
+		if rst = '1' then
 			wClkR <= '0';
 			wClkS <= '0';
 			wClkT <= '0';
