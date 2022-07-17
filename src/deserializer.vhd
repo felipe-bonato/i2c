@@ -4,19 +4,19 @@ use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 use ieee.numeric_std.all;
 
-entity ser2par is
+entity deserializer is
 	port (
 		data: out std_logic_vector(7 downto 0);
-		rx: in std_logic;
+		serial: in std_logic;
 
 		nd: in std_logic;
 
 		clk: in std_logic;
 		rst: in std_logic
 	);
-end ser2par;
+end deserializer;
 
-architecture behavioral of ser2par is
+architecture behavioral of deserializer is
 	signal wData: std_logic_vector (data'range);
 begin
 	U1 : process (rst, clk)	begin
@@ -25,7 +25,7 @@ begin
 		else
 			if rising_edge(clk) then
 				if nd = '1' then
-					wData <= wData(6 downto 0) & rx;
+					wData <= wData(6 downto 0) & serial;
 				end if;
 			end if;
 		end if;

@@ -22,13 +22,12 @@ entity master is
 end entity master;
 
 architecture behavioral of master is
-	component par2ser is
+	component serializer is
 		port (
 			load: in std_logic;
-			nd: in std_logic;
 			data: in std_logic_vector(7 downto 0);
-			tx: out std_logic;
-
+			nd: in std_logic;
+			serial: out std_logic;
 			rst: in std_logic;
 			clk: in std_logic
 		);
@@ -42,12 +41,12 @@ architecture behavioral of master is
 	signal wData: std_logic_vector(7 downto 0);
 	signal wTx: std_logic;
 begin
-	uSerializer: par2ser
+	uSerializer: serializer
 		port map (
 			load => wLoad,
-			nd => wNd,
 			data => wData,
-			tx => wTx,
+			nd => wNd,
+			serial => wTx,
 			rst => rst,
 			clk => clk
 		);

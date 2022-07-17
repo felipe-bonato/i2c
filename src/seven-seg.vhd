@@ -16,7 +16,7 @@ architecture behavioral of seven_seg is
 	signal wOn: std_logic := '0';
 	signal wOff: std_logic := '1';
 begin
-	process(rst, wOn, wOff)
+	process(num, rst)
 	begin
 		if rst = '1' then
 			display <= (others => wOff);

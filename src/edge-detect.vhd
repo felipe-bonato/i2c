@@ -6,7 +6,7 @@ use ieee.numeric_std.all;
 
 entity edge_detect is
 	port (
-		clk_uart: in std_logic;
+		clk_detect: in std_logic;
 
 		edge_up, edge_down: out std_logic;
 
@@ -18,18 +18,20 @@ end edge_detect;
 architecture behavioral of edge_detect is
 	signal wClkR, wClkS, wClkT: std_logic;
 begin
-	U1: process(clk, rst)
+	process(clk, rst)
  	begin
 		if rst = '1' then
 			wClkR <= '0';
 			wClkS <= '0';
 			wClkT <= '0';
+			edge_up <= '0';
+			edge_down <= '0';
 		elsif rising_edge(clk) then
-			wClkR <= clk_uart;
+			wClkR <= clk_detect;
 			wClkS <= wClkR;
 			wClkT <= wClkS;
 		end if;
-	end process U1;
+	end process;
 
    edge_down <= not(wClkS) and wClkT;
    edge_up <= wClkS and not(wClkT);

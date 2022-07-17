@@ -35,24 +35,35 @@ begin
 	end process;
 
 	process begin
+		wait for 110 ns;
+		
 		wNum <= x"0";
 		wait for 10 ns;
+		
 		wNum <= x"1";
 		wait for 10 ns;
+		
 		wNum <= x"2";
 		wait for 10 ns;
+		
 		wNum <= x"3";
 		wait for 10 ns;
+		
 		wNum <= x"4";
 		wait for 10 ns;
+		
 		wNum <= x"5";
 		wait for 10 ns;
+		
 		wNum <= x"6";
 		wait for 10 ns;
+		
 		wNum <= x"7";
 		wait for 10 ns;
+		
 		wNum <= x"8";
 		wait for 10 ns;
+		
 		wNum <= x"9";
 		wait;		
 	end process;
