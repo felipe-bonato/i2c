@@ -6,14 +6,14 @@ use ieee.numeric_std.all;
 
 entity master is
 	port (
-		addr: in std_logic_vector(2 downto 0);
-		dataIn: in std_logic_vector(3 downto 0);
+		addr: in std_logic_vector(6 downto 0);
+		dataIn: in std_logic_vector(7 downto 0);
 		rw: in std_logic;
 		send: in std_logic;
 		sda: inout std_logic;
 		scl: out std_logic;
 
-		dataOut: out std_logic_vector(3 downto 0);
+		dataOut: out std_logic_vector(7 downto 0);
 		
 		clk: in std_logic;
 		sclIn: in std_logic;
@@ -32,41 +32,151 @@ architecture behavioral of master is
 			clk: in std_logic
 		);
 	end component;
+
+	component edge_detect is
+		port (
+			clk_detect: in std_logic;
+			edge_up, edge_down: out std_logic;
+			clk: in std_logic;
+			rst: in std_logic
+		);
+	end component;
 	
-	type sState is (sIdle, sSending, sRecieving);
-	signal wState: sState;
+	type stMain is (sIdle, sStart, sStartToAddr, sAddr, sSendData, sRecvData, sStop);
 	
+	signal wSt: stMain;
+	
+	signal wAddr: std_logic_vector(6 downto 0);
+	signal wDataIn: std_logic_vector(7 downto 0);
 	signal wLoad: std_logic;
 	signal wNd: std_logic;
-	signal wData: std_logic_vector(7 downto 0);
-	signal wTx: std_logic;
+	signal wDataParalel: std_logic_vector(7 downto 0);
+	signal wSerial: std_logic;
+	signal wSclEdgeUp: std_logic;
+	signal wSclEdgeDown: std_logic;
 begin
 	uSerializer: serializer
 		port map (
 			load => wLoad,
-			data => wData,
+			data => wDataParalel,
 			nd => wNd,
-			serial => wTx,
+			serial => wSerial,
 			rst => rst,
 			clk => clk
 		);
 	
-	U1: process(clk, rst)
+	uSclEdgeDetect: edge_detect
+		port map (
+			clk_detect => sclIn,
+			edge_up => wSclEdgeUp,
+			edge_down => wSclEdgeDown,
+			clk => clk,
+			rst => rst
+		);
+	
+	Main: process(clk, rst)
+		variable pulseNd: boolean;
+		variable pulseLoad: boolean;
+		variable count: integer;
  	begin
 		if rst = '1' then
-			sda <= '0';
-			scl <= '0';
+			sda <= '1';
+			scl <= '1';
 			dataOut <= (others => '0');
+			wLoad <= '0';
+			wAddr <= (others => '0');
+			wDataParalel <= (others => '0');
+			wDataIn <= (others => '0');
+			wNd <= '0';
+			wSt <= sIdle;
+			pulseNd := false;
+			pulseLoad := false;
+			count := 0;
 		elsif rising_edge(clk) then
-			if wState = sIdle then
-				wData <= x"00";
-			elsif wState = sSending then
-				wData <= x"01";
-			elsif wState = sRecieving then
-				wData <= x"02";
+
+			if pulseLoad then
+				wLoad <= '1';
+				pulseLoad := false;
 			else
-				wData <= x"03";
+				wLoad <= '0';
 			end if;
+			
+			if pulseNd then
+				wNd <= '1';
+				pulseNd := false;
+			else
+				wNd <= '0';
+			end if;
+
+			case wSt is
+
+				when sIdle =>
+					if send = '1' then
+						wAddr <= addr;
+						wDataIn <= dataIn;
+						wDataParalel <= addr & rw; -- RW is encoded in the last bit of addr
+						pulseLoad := true;
+						-- Send Start Signal
+						wSt <= sStart;
+					end if;
+
+				when sStart =>
+					if wSclEdgeUp = '1' then
+						scl <= '1';
+						sda <= '0';
+						wSt <= sStartToAddr;
+					end if;	
+				when sStartToAddr =>
+					if wSclEdgeDown = '1' then
+						scl <= sclIn;
+						sda <= '0';
+						wSt <= sAddr;
+					end if;
+				
+				when sAddr =>
+					if count <= 8 then
+						sda <= wSerial;
+						scl <= sclIn;
+						if wSclEdgeDown = '1'then
+							pulseNd := true;
+							count := count + 1;
+						end if;
+					end if;
+					
+					if count = 8 then
+						count := 0;
+						wDataParalel <= wDataIn;
+						pulseLoad := true;
+						if rw = '0' then
+							wSt <= sSendData;
+						else
+							wSt <= sRecvData;
+						end if;
+					end if;	
+				when sSendData =>
+					if count <= 8 then
+						sda <= wSerial;
+						scl <= sclIn;
+						if wSclEdgeDown = '1'then
+							pulseNd := true;
+							count := count + 1;
+						end if;
+					end if;
+					if count > 8 then
+						count := 0;
+						scl <= '0';
+						sda <= '0';
+						wSt <= sStop;
+					end if;
+				when sStop =>
+					if wSclEdgeUp = '1' then
+						scl <= '1';
+						sda <= '1';
+						wSt <= sIdle;
+					end if;
+				when sRecvData => wSt <= sIdle;
+				when others => wSt <= sIdle;
+			end case;
 		end if;
-	end process U1;
+	end process Main;
 end architecture behavioral;

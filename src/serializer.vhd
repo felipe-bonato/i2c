@@ -24,7 +24,7 @@ begin
 	begin
 	    if rst = '1' then
 			wNd <= '0';
-			serial <= 'Z'; 
+			serial <= '0'; 
 	    elsif falling_edge(clk) then
 			if nd = '1' then
 				serial <= wData(7);

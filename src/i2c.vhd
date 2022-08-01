@@ -24,19 +24,19 @@ architecture behavioral of i2c is
 	signal wClk: std_logic;
 	signal wSclPll: std_logic;
 	signal wDataSlave: std_logic_vector(3 downto 0);
-	signal wDataMaster: std_logic_vector(3 downto 0);
+	signal wDataMaster: std_logic_vector(7 downto 0);
 	signal wSevenSegMaster: std_logic_vector(6 downto 0);
 	signal wSevenSegSlave: std_logic_vector(6 downto 0);
 
 	component master is
 		port (
-			addr: in std_logic_vector(2 downto 0);
-			dataIn: in std_logic_vector(3 downto 0);
+			addr: in std_logic_vector(6 downto 0);
+			dataIn: in std_logic_vector(7 downto 0);
 			rw: in std_logic;
 			send: in std_logic;
 			sda: inout std_logic;
 			scl: out std_logic;
-			dataOut: out std_logic_vector(3 downto 0);
+			dataOut: out std_logic_vector(7 downto 0);
 			clk: in std_logic;
 			sclIn: in std_logic;
 			rst: in std_logic
@@ -73,8 +73,8 @@ begin
 	
 	uMaster: master
 		port map (
-			addr => addr,
-			dataIn => data,
+			addr => addr & "0000",
+			dataIn => data & "0000",
 			rw => rw,
 			send => send,
 			sda => wSda,
@@ -87,7 +87,7 @@ begin
 
 	uSevenSegMaster: seven_seg
 		port map ( 
-			num => wDataMaster,
+			num => wDataMaster(3 downto 0),
 			display => wSevenSegMaster,
 			rst => rst
 		);

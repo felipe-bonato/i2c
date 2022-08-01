@@ -24,8 +24,6 @@ begin
 			wClkR <= '0';
 			wClkS <= '0';
 			wClkT <= '0';
-			edge_up <= '0';
-			edge_down <= '0';
 		elsif rising_edge(clk) then
 			wClkR <= clk_detect;
 			wClkS <= wClkR;
