@@ -217,7 +217,8 @@ begin
 					end if;
 
 				when sRecvData =>
-					if count <= 8 then
+					sda <= 'Z';
+					if count <= 9 then
 						wSerialDeserializer <= sda;
 						scl <= sclIn;
 						if wSclEdgeUp = '1'then
@@ -225,7 +226,7 @@ begin
 							count := count + 1;
 						end if;
 					end if;
-					if count > 8 then
+					if count > 9 then
 						count := 0;
 						dataOut <= wDataDeserializer;
 						-- Send stop signal

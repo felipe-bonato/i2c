@@ -75,34 +75,34 @@ begin
 	begin
 		wAddr <= "1010101";
 		wRw <= '1';
-        wDataIn <= "00000000";
+      wDataIn <= "00000000";
 		wSend <= '0';
-        wSda <= 'Z';
+      wSda <= 'Z';
 		wait for 145 ns;
 		wSend <= '1';
 		wait for 1 ns;
 		wSend <= '0';
 		wait for 4 ns;
 
-        -- Wait for addr
-        wait for 180 ns;
-        wSda <= '1'; -- Bit 0
-        wait for 20 ns;
-        wSda <= '0'; -- Bit 1
-        wait for 20 ns;
-        wSda <= '0'; -- Bit 2
-        wait for 20 ns;
-        wSda <= '1'; -- Bit 3
-        wait for 20 ns;
-        wSda <= '1'; -- Bit 4
-        wait for 20 ns;
-        wSda <= '0'; -- Bit 5
-        wait for 20 ns;
-        wSda <= '0'; -- Bit 6
-        wait for 20 ns;
-        wSda <= '1'; -- Bit 7
-        wait for 20 ns;
-
+		-- Wait for addr
+		wait for 180 ns;
+		wSda <= '1'; -- Bit 0
+		wait for 20 ns;
+		wSda <= '0'; -- Bit 1
+		wait for 20 ns;
+		wSda <= '0'; -- Bit 2
+		wait for 20 ns;
+		wSda <= '1'; -- Bit 3
+		wait for 20 ns;
+		wSda <= '1'; -- Bit 4
+		wait for 20 ns;
+		wSda <= '0'; -- Bit 5
+		wait for 20 ns;
+		wSda <= '0'; -- Bit 6
+		wait for 20 ns;
+		wSda <= '1'; -- Bit 7
+		wait for 20 ns;
+		wSda <= 'Z';
 		wait;		
 	end process;
 
