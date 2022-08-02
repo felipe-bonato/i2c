@@ -4,22 +4,10 @@ use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 use ieee.numeric_std.all;
 
-entity i2c is
-	port (
-		send: in std_logic;
-		addr: in std_logic_vector(2 downto 0);
-		data: in std_logic_vector(3 downto 0);
-		rw: in std_logic;
-	
-		seven_seg_master: out std_logic_vector(7 downto 0);
-		seven_seg_slave: out std_logic_vector(7 downto 0);
-	
-		rst: in std_logic;
-		clk: in std_logic
-	);
-end entity i2c;
+entity tb_i2c is
+end entity tb_i2c;
 
-architecture behavioral of i2c is
+architecture behavioral of tb_i2c is
 	signal wSda: std_logic;
 	signal wScl: std_logic;
 	signal wClk: std_logic;
@@ -28,6 +16,13 @@ architecture behavioral of i2c is
 	signal wDataMaster: std_logic_vector(7 downto 0);
 	signal wSevenSegMaster: std_logic_vector(6 downto 0);
 	signal wSevenSegSlave: std_logic_vector(6 downto 0);
+
+    signal wRst: std_logic;
+    signal wRw: std_logic;
+    signal wSend: std_logic;
+    signal wAddr: std_logic_vector(6 downto 0);
+    signal wDataIn: std_logic_vector(7 downto 0);
+
 
 	component master is
 		port (
@@ -61,61 +56,77 @@ architecture behavioral of i2c is
 			rst: in std_logic
 		);
 	end component;
-	
-	component pll IS
-		PORT
-		(
-			areset		: IN STD_LOGIC  := '0';
-			inclk0		: IN STD_LOGIC  := '0';
-			c0		: OUT STD_LOGIC ;
-			locked		: OUT STD_LOGIC 
-		);
-	END component;
 begin
-
-	uPll: pll
-		port map (
-			areset		=> not rst,
-			inclk0		=> clk,
-			c0				=> wClk,
-			locked		=> open
-		);
 	
 	uSlave: slave
+      generic map ("0000001")
 		port map (
 			sda => wSda,
 			scl => wScl,
 			dataOut => wDataSlave,
 			clk => wClk,
-			rst => rst
+			rst => wRst
 		);
 	
 	uMaster: master
 		port map (
-			addr => addr & "0000",
-			dataIn => data & "0000",
-			rw => rw,
-			send => send,
+			addr => wAddr,
+			dataIn => wDataIn,
+			rw => wRw,
+			send => wSend,
 			sda => wSda,
 			scl => wScl,
 			dataOut => wDataMaster,
 			clk => wClk,
 			sclIn => wSclPll,
-			rst => rst
+			rst => wRst
 		);
 
 	uSevenSegMaster: seven_seg
 		port map ( 
 			num => wDataMaster(3 downto 0),
 			display => wSevenSegMaster,
-			rst => rst
+			rst => wRst
 		);
 
 	uSevenSegSlave: seven_seg
 		port map ( 
 			num => wDataSlave(3 downto 0),
 			display => wSevenSegSlave,
-			rst => rst
+			rst => wRst
 		);
 	
+    process begin
+        wRst <= '1';
+		wait for 100 ns;
+		wRst <= '0';
+		wait;      
+    end process;
+
+    process begin -- Clock fast
+        wClk <= '1';
+        wait for 20 ps;
+        wClk <= '0';
+        wait for 20 ps;
+    end process;
+
+    process begin -- clock slow (scl)
+		wSclPll <= '1';
+		wait for 10 ns;
+		wSclPll <= '0';
+		wait for 10 ns;
+	end process;
+
+    process begin
+        wRw <= '0';
+        wSend <= '0';
+        wAddr <= "0000010";
+        wDataIn <= "10011001";
+        wait for 149 ns;
+        wSend <= '1';
+        wait for 1 ns;
+        wait;
+
+    end process;
+
 end architecture behavioral;

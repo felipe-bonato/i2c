@@ -244,8 +244,9 @@ begin
 		wSda <= '1'; -- Bit 8
 		wScl <= '0';
 		wait for 10 ns;
-
+		
 		-- Recv data
+		wSda <= 'Z'; 
 		wScl <= '0';
 		wait for 10 ns;
 		wScl <= '1';

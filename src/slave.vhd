@@ -197,8 +197,12 @@ begin
 								wSt <= sRecvData;
 								wDataSerializer <= wData;
 							else
+								wPulseSerializerLoad <= true;
 								wSt <= sSendData;
 							end if;
+						else
+							wSt <= sRecvData;
+							wDataSerializer <= wData;
 						end if;
 					end if;	
 
