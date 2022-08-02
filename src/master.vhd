@@ -74,6 +74,7 @@ architecture behavioral of master is
 	signal wDataDeserializer: std_logic_vector(7 downto 0);
 	signal wSerialDeserializer: std_logic;
 
+	-- Edge detector signals
 	signal wSclEdgeUp: std_logic;
 	signal wSclEdgeDown: std_logic;
 
@@ -187,7 +188,7 @@ begin
 						end if;
 					end if;
 					
-					if count = 8 then
+					if count > 8 then
 						count := 0;
 						wDataSerializer <= wDataIn;
 						wPulseSerializerLoad <= true;
@@ -218,7 +219,7 @@ begin
 
 				when sRecvData =>
 					sda <= 'Z';
-					if count <= 9 then
+					if count <= 8 then
 						wSerialDeserializer <= sda;
 						scl <= sclIn;
 						if wSclEdgeUp = '1'then
@@ -226,7 +227,7 @@ begin
 							count := count + 1;
 						end if;
 					end if;
-					if count > 9 then
+					if count > 8 then
 						count := 0;
 						dataOut <= wDataDeserializer;
 						-- Send stop signal
@@ -245,5 +246,6 @@ begin
 				when others => wSt <= sIdle;
 			end case;
 		end if;
+		
 	end process Main;
 end architecture behavioral;

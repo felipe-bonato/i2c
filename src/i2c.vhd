@@ -23,7 +23,7 @@ architecture behavioral of i2c is
 	signal wScl: std_logic;
 	signal wClk: std_logic;
 	signal wSclPll: std_logic;
-	signal wDataSlave: std_logic_vector(3 downto 0);
+	signal wDataSlave: std_logic_vector(7 downto 0);
 	signal wDataMaster: std_logic_vector(7 downto 0);
 	signal wSevenSegMaster: std_logic_vector(6 downto 0);
 	signal wSevenSegSlave: std_logic_vector(6 downto 0);
@@ -47,7 +47,7 @@ architecture behavioral of i2c is
 		port (
 			sda: inout std_logic;
 			scl: in std_logic;
-			dataOut: out std_logic_vector(3 downto 0);
+			dataOut: out std_logic_vector(7 downto 0);
 			clk: in std_logic;
 			rst: in std_logic
 		);
@@ -94,7 +94,7 @@ begin
 
 	uSevenSegSlave: seven_seg
 		port map ( 
-			num => wDataSlave,
+			num => wDataSlave(3 downto 0),
 			display => wSevenSegSlave,
 			rst => rst
 		);
