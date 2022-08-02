@@ -22,6 +22,7 @@ entity master is
 end entity master;
 
 architecture behavioral of master is
+
 	component serializer is
 		port (
 			load: in std_logic;
@@ -30,6 +31,18 @@ architecture behavioral of master is
 			serial: out std_logic;
 			rst: in std_logic;
 			clk: in std_logic
+		);
+	end component;
+
+	component deserializer is
+		port (
+			data: out std_logic_vector(7 downto 0);
+			serial: in std_logic;
+	
+			nd: in std_logic;
+	
+			clk: in std_logic;
+			rst: in std_logic
 		);
 	end component;
 
@@ -42,27 +55,51 @@ architecture behavioral of master is
 		);
 	end component;
 	
-	type stMain is (sIdle, sStart, sStartToAddr, sAddr, sSendData, sRecvData, sStop);
+	type stMain is (sIdle, sStart, sAddr, sSendData, sRecvData, sStop);
 	
 	signal wSt: stMain;
 	
 	signal wAddr: std_logic_vector(6 downto 0);
 	signal wDataIn: std_logic_vector(7 downto 0);
-	signal wLoad: std_logic;
-	signal wNd: std_logic;
-	signal wDataParalel: std_logic_vector(7 downto 0);
-	signal wSerial: std_logic;
+	signal wSda: std_logic;
+
+	-- Serializer control signals
+	signal wLoadSerializer: std_logic;
+	signal wNdSerializer: std_logic;
+	signal wDataSerializer: std_logic_vector(7 downto 0);
+	signal wSerialSerializer: std_logic;
+
+	-- Deserializer control signals
+	signal wNdDeserializer: std_logic;
+	signal wDataDeserializer: std_logic_vector(7 downto 0);
+	signal wSerialDeserializer: std_logic;
+
 	signal wSclEdgeUp: std_logic;
 	signal wSclEdgeDown: std_logic;
+
+	-- Variables used to generate 1 clock cicle pulses
+	signal wPulseSerializerNd: boolean;
+	signal wPulseSerializerLoad: boolean;
+	signal wPulseDeserializerNd: boolean;
+	signal wPulseDeserializerLoad: boolean;
 begin
 	uSerializer: serializer
 		port map (
-			load => wLoad,
-			data => wDataParalel,
-			nd => wNd,
-			serial => wSerial,
+			load => wLoadSerializer,
+			data => wDataSerializer,
+			nd => wNdSerializer,
+			serial => wSerialSerializer,
 			rst => rst,
 			clk => clk
+		);
+
+	uDeserializer: deserializer
+		port map (
+			data => wDataDeserializer,
+			serial => wSerialDeserializer,
+			nd => wNdDeserializer,
+			clk => clk,
+			rst => rst
 		);
 	
 	uSclEdgeDetect: edge_detect
@@ -75,58 +112,65 @@ begin
 		);
 	
 	Main: process(clk, rst)
-		variable pulseNd: boolean;
-		variable pulseLoad: boolean;
 		variable count: integer;
  	begin
 		if rst = '1' then
 			sda <= '1';
 			scl <= '1';
 			dataOut <= (others => '0');
-			wLoad <= '0';
+			wLoadSerializer <= '0';
 			wAddr <= (others => '0');
-			wDataParalel <= (others => '0');
+			wDataSerializer <= (others => '0');
 			wDataIn <= (others => '0');
-			wNd <= '0';
+			wNdSerializer <= '0';
 			wSt <= sIdle;
-			pulseNd := false;
-			pulseLoad := false;
+			wPulseSerializerNd <= false;
+			wPulseSerializerLoad <= false;
+			wPulseDeserializerNd <= false;
+			--wPulseDeserializerLoad <= false;
 			count := 0;
 		elsif rising_edge(clk) then
 
-			if pulseLoad then
-				wLoad <= '1';
-				pulseLoad := false;
+			if wPulseSerializerLoad then
+				wLoadSerializer <= '1';
+				wPulseSerializerLoad <= false;
 			else
-				wLoad <= '0';
+				wLoadSerializer <= '0';
 			end if;
 			
-			if pulseNd then
-				wNd <= '1';
-				pulseNd := false;
+			if wPulseSerializerNd then
+				wNdSerializer <= '1';
+				wPulseSerializerNd <= false;
 			else
-				wNd <= '0';
+				wNdSerializer <= '0';
+			end if;
+			
+			if wPulseDeserializerNd then
+				wNdDeserializer <= '1';
+				wPulseDeserializerNd <= false;
+			else
+				wNdDeserializer <= '0';
 			end if;
 
 			case wSt is
 
 				when sIdle =>
 					if send = '1' then
+						-- Saving the data for use
 						wAddr <= addr;
 						wDataIn <= dataIn;
-						wDataParalel <= addr & rw; -- RW is encoded in the last bit of addr
-						pulseLoad := true;
+
+						wDataSerializer <= addr & rw; -- RW is encoded in the last bit of addr
+
+						wPulseSerializerLoad <= true;
+
 						-- Send Start Signal
+						scl <= '1';
+						sda <= '0';
 						wSt <= sStart;
 					end if;
 
 				when sStart =>
-					if wSclEdgeUp = '1' then
-						scl <= '1';
-						sda <= '0';
-						wSt <= sStartToAddr;
-					end if;	
-				when sStartToAddr =>
 					if wSclEdgeDown = '1' then
 						scl <= sclIn;
 						sda <= '0';
@@ -135,46 +179,68 @@ begin
 				
 				when sAddr =>
 					if count <= 8 then
-						sda <= wSerial;
+						sda <= wSerialSerializer;
 						scl <= sclIn;
 						if wSclEdgeDown = '1'then
-							pulseNd := true;
+							wPulseSerializerNd <= true;
 							count := count + 1;
 						end if;
 					end if;
 					
 					if count = 8 then
 						count := 0;
-						wDataParalel <= wDataIn;
-						pulseLoad := true;
+						wDataSerializer <= wDataIn;
+						wPulseSerializerLoad <= true;
 						if rw = '0' then
 							wSt <= sSendData;
 						else
 							wSt <= sRecvData;
 						end if;
 					end if;	
+
 				when sSendData =>
 					if count <= 8 then
-						sda <= wSerial;
+						sda <= wSerialSerializer;
 						scl <= sclIn;
 						if wSclEdgeDown = '1'then
-							pulseNd := true;
+							wPulseSerializerNd <= true;
 							count := count + 1;
 						end if;
 					end if;
 					if count > 8 then
 						count := 0;
+						dataOut <= wDataIn;
+						-- Send stop signal
 						scl <= '0';
 						sda <= '0';
 						wSt <= sStop;
 					end if;
+
+				when sRecvData =>
+					if count <= 8 then
+						wSerialDeserializer <= sda;
+						scl <= sclIn;
+						if wSclEdgeUp = '1'then
+							wPulseDeserializerNd <= true;
+							count := count + 1;
+						end if;
+					end if;
+					if count > 8 then
+						count := 0;
+						dataOut <= wDataDeserializer;
+						-- Send stop signal
+						scl <= '0';
+						sda <= '0';
+						wSt <= sStop;
+					end if;
+
 				when sStop =>
 					if wSclEdgeUp = '1' then
 						scl <= '1';
 						sda <= '1';
 						wSt <= sIdle;
 					end if;
-				when sRecvData => wSt <= sIdle;
+
 				when others => wSt <= sIdle;
 			end case;
 		end if;

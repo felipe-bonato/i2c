@@ -4,10 +4,10 @@ use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 use ieee.numeric_std.all;
 
-entity tb_master is
-end tb_master;
+entity tb_master_read is
+end tb_master_read;
 
-architecture behavioral of tb_master is
+architecture behavioral of tb_master_read is
 	component master is
 		port (
 			addr: in std_logic_vector(6 downto 0);
@@ -74,25 +74,35 @@ begin
 	process
 	begin
 		wAddr <= "1010101";
-		wDataIn <= "10011001";
-		wRw <= '0';
-		wSend <= '0';
-		wait for 149 ns;
-		wSend <= '1';
-		wait for 1 ns;
-		wSend <= '0';
-		
-		wait for 550 ns;
-		
-		wAddr <= "0101010";
-		wDataIn <= "01100110";
 		wRw <= '1';
+        wDataIn <= "00000000";
 		wSend <= '0';
-		wait for 149 ns;
+        wSda <= 'Z';
+		wait for 145 ns;
 		wSend <= '1';
 		wait for 1 ns;
 		wSend <= '0';
-		
+		wait for 4 ns;
+
+        -- Wait for addr
+        wait for 180 ns;
+        wSda <= '1'; -- Bit 0
+        wait for 20 ns;
+        wSda <= '0'; -- Bit 1
+        wait for 20 ns;
+        wSda <= '0'; -- Bit 2
+        wait for 20 ns;
+        wSda <= '1'; -- Bit 3
+        wait for 20 ns;
+        wSda <= '1'; -- Bit 4
+        wait for 20 ns;
+        wSda <= '0'; -- Bit 5
+        wait for 20 ns;
+        wSda <= '0'; -- Bit 6
+        wait for 20 ns;
+        wSda <= '1'; -- Bit 7
+        wait for 20 ns;
+
 		wait;		
 	end process;
 
